@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RepairCRM — Priorización de funciones</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    .rating-btn { transition: all 0.15s ease; }
+    .rating-btn[data-selected="true"] { transform: scale(1.05); }
+    .feature-card { transition: all 0.2s ease; }
+    .feature-card[data-answered="true"] { opacity: 0.75; }
+    .feature-card[data-answered="true"]:hover { opacity: 1; }
+    .progress-bar { transition: width 0.3s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
+    <div class="max-w-2xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-lg font-bold text-gray-900">RepairCRM</h1>
+          <p class="text-xs text-gray-500">Priorización de funciones</p>
+        </div>
+        <div class="text-right">
+          <span id="progress-text" class="text-sm font-semibold text-brand-600">0 / 0</span>
+          <div class="w-24 h-1.5 bg-gray-200 rounded-full mt-1">
+            <div id="progress-fill" class="progress-bar h-full bg-brand-600 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Intro -->
+  <main class="max-w-2xl mx-auto px-4 py-6 pb-32">
+    <div id="intro" class="mb-8 bg-white rounded-xl border border-gray-200 p-5">
+      <h2 class="text-xl font-bold mb-2">¡Hola! 👋</h2>
+      <p class="text-sm text-gray-600 leading-relaxed mb-3">
+        Estamos construyendo <strong>RepairCRM</strong>, un sistema para talleres de reparación.
+        Tu opinión nos ayuda a decidir qué construir primero.
+      </p>
+      <p class="text-sm text-gray-600 leading-relaxed mb-4">
+        Para cada función, selecciona qué tan importante es para tu negocio:
+      </p>
+      <div class="flex flex-col gap-2 text-sm">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-full bg-red-100 border-2 border-red-400"></span>
+          <span><strong>No necesario</strong> — No lo usaría</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-full bg-amber-100 border-2 border-amber-400"></span>
+          <span><strong>Sería bueno</strong> — Útil pero puedo vivir sin él</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-3 h-3 rounded-full bg-emerald-100 border-2 border-emerald-400"></span>
+          <span><strong>Sí necesario</strong> — Lo necesito para usar el sistema</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Name input -->
+    <div class="mb-6 bg-white rounded-xl border border-gray-200 p-5">
+      <label for="respondent-name" class="block text-sm font-semibold mb-2">Tu nombre</label>
+      <input
+        type="text"
+        id="respondent-name"
+        placeholder="Ej. Juan Pérez"
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+      >
+    </div>
+
+    <!-- Features -->
+    <div id="features" class="space-y-4"></div>
+
+    <!-- Submit area -->
+    <div id="submit-area" class="hidden mt-8">
+      <div class="bg-white rounded-xl border border-gray-200 p-5 text-center">
+        <div id="submit-incomplete" class="hidden">
+          <p class="text-sm text-amber-600 font-medium mb-2">
+            Faltan <span id="remaining-count"></span> funciones por evaluar
+          </p>
+          <p class="text-xs text-gray-500">Puedes descargar resultados parciales o completar todas las evaluaciones.</p>
+        </div>
+        <div id="submit-complete" class="hidden">
+          <p class="text-sm text-emerald-600 font-medium mb-2">
+            ✓ ¡Todas las funciones evaluadas!
+          </p>
+        </div>
+        <button
+          id="download-btn"
+          onclick="downloadCSV()"
+          class="mt-3 inline-flex items-center gap-2 bg-brand-600 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-brand-700 active:scale-95 transition-all"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Descargar resultados (CSV)
+        </button>
+        <p class="text-xs text-gray-400 mt-2">Envía el archivo por WhatsApp</p>
+      </div>
+    </div>
+
+    <!-- Optional comments -->
+    <div class="mt-6 bg-white rounded-xl border border-gray-200 p-5">
+      <label for="comments" class="block text-sm font-semibold mb-2">Comentarios adicionales (opcional)</label>
+      <textarea
+        id="comments"
+        rows="3"
+        placeholder="¿Hay algo más que te gustaría que tuviera el sistema? ¿Algo que uses hoy y no ves en la lista?"
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+      ></textarea>
+    </div>
+  </main>
+
+  <script>
+    const FEATURES = [
+      {
+        id: "tickets",
+        name: "Tickets / Órdenes de trabajo",
+        description: "El flujo principal del taller",
+        items: [
+          "Crear ticket paso a paso: cliente, dispositivo, problema",
+          "Estados configurables (Recibido → Diagnosticando → Reparando → Listo → Entregado)",
+          "Vista de lista en celular + vista Kanban en escritorio",
+          "Notas internas del equipo + notas visibles para el cliente",
+          "Fotos categorizadas (antes, durante, después)",
+          "Timeline automático de todo lo que pasa en el ticket",
+          "Los tickets no se pueden borrar, solo cancelar con autorización"
+        ]
+      },
+      {
+        id: "clientes",
+        name: "Gestión de clientes",
+        description: "Base de datos de clientes del taller",
+        items: [
+          "Lista con búsqueda por nombre, teléfono o correo",
+          "Historial completo: todos los tickets, cuánto ha gastado, última visita",
+          "Historial por dispositivo (qué se le ha reparado a cada equipo)",
+          "Notas internas sobre el cliente (preferencias, descuentos especiales)",
+          "Detección de duplicados al crear clientes nuevos"
+        ]
+      },
+      {
+        id: "cotizaciones",
+        name: "Cotizaciones",
+        description: "Presupuestos dentro de cada ticket",
+        items: [
+          "Crear cotización con ítems del catálogo o personalizados",
+          "Descuentos e impuestos por ítem",
+          "Historial de cotizaciones (si el cliente rechaza, crear nueva versión)",
+          "Enviar cotización al cliente por WhatsApp",
+          "El cliente puede aprobar/rechazar desde su portal"
+        ]
+      },
+      {
+        id: "pagos",
+        name: "Registro de pagos",
+        description: "Control de cobros en cada ticket",
+        items: [
+          "Pagos parciales o totales",
+          "Métodos: efectivo, SPEI, OXXO, tarjeta",
+          "Adjuntar comprobante como foto",
+          "Ver saldo pendiente por ticket"
+        ]
+      },
+      {
+        id: "catalogo",
+        name: "Catálogo de servicios y productos",
+        description: "Lista de lo que ofrece tu taller",
+        items: [
+          "Servicios con nombre y precio (ej. \"Cambio de pantalla\")",
+          "Productos/refacciones con precio y SKU",
+          "Categorías de dos niveles (ej. Teléfono → Pantallas)",
+          "Búsqueda inteligente al agregar ítems a cotizaciones"
+        ]
+      },
+      {
+        id: "portal",
+        name: "Portal para clientes",
+        description: "Página web donde el cliente ve su ticket",
+        items: [
+          "Link único por WhatsApp — sin login, sin app",
+          "Ver estado actual de la reparación",
+          "Ver fotos del diagnóstico",
+          "Ver y aprobar/rechazar cotización",
+          "Ver historial de lo que ha pasado"
+        ]
+      },
+      {
+        id: "whatsapp",
+        name: "Integración con WhatsApp",
+        description: "Comunicación rápida con clientes",
+        items: [
+          "Mensajes automáticos al crear ticket, enviar cotización, equipo listo",
+          "Plantillas de mensajes pre-escritos para situaciones comunes",
+          "Abrir WhatsApp con un click desde cualquier ticket o cliente",
+          "Enviar link del portal al cliente"
+        ]
+      },
+      {
+        id: "equipo",
+        name: "Gestión de equipo",
+        description: "Roles y permisos para empleados",
+        items: [
+          "3 roles: Dueño (todo), Gerente (reportes + facturación), Técnico (tickets y clientes)",
+          "Invitar empleados por correo",
+          "PIN de autorización para operaciones sensibles (cancelar ticket, anular pago)",
+          "Cada empleado pertenece a una o más tiendas"
+        ]
+      },
+      {
+        id: "dashboard",
+        name: "Dashboard y reportes",
+        description: "Resumen visual del estado del taller",
+        items: [
+          "Vista de \"qué necesita atención\": tickets vencidos, listos para recoger, cotizaciones pendientes",
+          "Métricas: tickets abiertos, completados, ingresos del mes, tiempo promedio de reparación",
+          "Resumen del día",
+          "Gráfica de tickets por estado",
+          "Exportar tickets y pagos a CSV",
+          "Vista filtrada por rol (técnico solo ve lo suyo)"
+        ]
+      },
+      {
+        id: "impresion",
+        name: "Impresión térmica",
+        description: "Recibos y etiquetas desde el navegador",
+        items: [
+          "Imprimir recibo en impresora térmica o normal",
+          "Etiquetas QR de 50x30mm para pegar al equipo del cliente",
+          "QR en recibo que lleva al portal del cliente"
+        ]
+      },
+      {
+        id: "mercadopago",
+        name: "Pagos con MercadoPago",
+        description: "Cobrar con tarjeta, OXXO o SPEI en línea",
+        items: [
+          "Generar links de pago para cada cotización",
+          "Links de anticipo + saldo por separado",
+          "El pago se registra automáticamente en el ticket",
+          "El cliente puede pagar desde el portal",
+          "El dinero va directo a TU cuenta de MercadoPago"
+        ]
+      },
+      {
+        id: "cfdi",
+        name: "Facturación CFDI",
+        description: "Facturas fiscales válidas ante el SAT",
+        items: [
+          "Generar CFDI 4.0 con un click desde el ticket",
+          "Auto-factura: el cliente pone su RFC en el portal y genera su factura",
+          "Factura de \"Público en General\" para ventas sin factura individual",
+          "Cancelación de facturas dentro de la ventana del SAT",
+          "Comprar paquetes adicionales de folios si se agotan"
+        ]
+      },
+      {
+        id: "inventario",
+        name: "Inventario serializado",
+        description: "Rastreo de partes individuales por serie/IMEI",
+        items: [
+          "Cada parte de alto valor tiene su propio número de serie",
+          "Historial: de dónde vino, cuánto costó, quién la vendió, en qué ticket se usó",
+          "Créditos de desbloqueo como productos digitales (Magma, Chimera, etc.)",
+          "Control de stock por unidad individual"
+        ]
+      },
+      {
+        id: "cosecha",
+        name: "Cosecha de partes (harvesting)",
+        description: "Comprar equipos dañados y reciclar partes",
+        items: [
+          "Registrar compra de dispositivo dañado",
+          "Desmontar y registrar cada parte funcional como inventario",
+          "Cálculo automático de costo por parte",
+          "Trazabilidad completa: de qué equipo salió cada parte"
+        ]
+      },
+      {
+        id: "caja",
+        name: "Conteo ciego de caja",
+        description: "Anti-robo: verificar efectivo al cerrar",
+        items: [
+          "El empleado cuenta el efectivo ANTES de ver cuánto debería haber",
+          "Se registra la diferencia (varianza)",
+          "Si la diferencia es grande, se pide explicación obligatoria",
+          "El dueño ve reporte de varianzas por empleado"
+        ]
+      },
+      {
+        id: "notificaciones",
+        name: "Notificaciones",
+        description: "Alertas dentro del sistema",
+        items: [
+          "Centro de notificaciones con contador",
+          "Alertas de: cotización aprobada, ticket asignado, pago recibido, cambio de estado",
+          "Agrupación inteligente (varios eventos del mismo ticket = 1 notificación)",
+          "Configurar quién recibe qué tipo de notificación"
+        ]
+      },
+      {
+        id: "multiubicacion",
+        name: "Multi-ubicación",
+        description: "Manejar varias sucursales",
+        items: [
+          "Clientes y catálogo compartidos entre sucursales",
+          "Tickets separados por ubicación",
+          "Reportes por ubicación o consolidados",
+          "Empleados pueden pertenecer a una o más ubicaciones"
+        ]
+      },
+      {
+        id: "offline",
+        name: "App offline (PWA)",
+        description: "Funciona sin internet",
+        items: [
+          "Ver tickets, clientes y catálogo sin conexión",
+          "Crear tickets y notas sin internet",
+          "Sincronización automática al reconectarse",
+          "Se instala como app en el celular desde el navegador"
+        ]
+      },
+      {
+        id: "garantia",
+        name: "Reparaciones de garantía",
+        description: "Vincular tickets de garantía con el original",
+        items: [
+          "Marcar un ticket como garantía",
+          "Vincularlo al ticket original",
+          "Trazabilidad completa: ver qué reparación generó la garantía"
+        ]
+      }
+    ];
+
+    const RATINGS = {
+      no: { label: "No necesario", value: "No necesario", bg: "bg-red-50", border: "border-red-300", text: "text-red-700", ring: "ring-red-400" },
+      nice: { label: "Sería bueno", value: "Sería bueno tener", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", ring: "ring-amber-400" },
+      yes: { label: "Sí necesario", value: "Sí necesario", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", ring: "ring-emerald-400" }
+    };
+
+    const ratings = {};
+
+    function renderFeatures() {
+      const container = document.getElementById("features");
+      container.innerHTML = FEATURES.map((f, idx) => `
+        <div class="feature-card bg-white rounded-xl border border-gray-200 p-5" id="card-${f.id}" data-answered="false">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <span class="text-xs font-medium text-gray-400">${idx + 1} / ${FEATURES.length}</span>
+              <h3 class="text-base font-bold text-gray-900 mt-0.5">${f.name}</h3>
+              <p class="text-sm text-gray-500">${f.description}</p>
+            </div>
+          </div>
+          <ul class="mt-3 space-y-1 mb-4">
+            ${f.items.map(item => `
+              <li class="text-sm text-gray-600 flex items-start gap-2">
+                <span class="text-gray-300 mt-0.5">•</span>
+                <span>${item}</span>
+              </li>
+            `).join("")}
+          </ul>
+          <div class="flex gap-2">
+            ${Object.entries(RATINGS).map(([key, r]) => `
+              <button
+                class="rating-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 ${r.border} ${r.bg} ${r.text} opacity-60 hover:opacity-100"
+                data-feature="${f.id}"
+                data-rating="${key}"
+                data-selected="false"
+                onclick="setRating('${f.id}', '${key}')"
+              >
+                ${r.label}
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function setRating(featureId, ratingKey) {
+      ratings[featureId] = ratingKey;
+
+      // Update button states
+      document.querySelectorAll(`[data-feature="${featureId}"]`).forEach(btn => {
+        const isSelected = btn.dataset.rating === ratingKey;
+        btn.dataset.selected = isSelected;
+        const r = RATINGS[btn.dataset.rating];
+        if (isSelected) {
+          btn.className = `rating-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 ${r.border} ${r.bg} ${r.text} opacity-100 ring-2 ${r.ring}`;
+        } else {
+          btn.className = `rating-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 border-gray-200 bg-gray-50 text-gray-400 opacity-60 hover:opacity-80`;
+        }
+      });
+
+      // Mark card
+      document.getElementById(`card-${featureId}`).dataset.answered = "true";
+
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const answered = Object.keys(ratings).length;
+      const total = FEATURES.length;
+      const pct = Math.round((answered / total) * 100);
+
+      document.getElementById("progress-text").textContent = `${answered} / ${total}`;
+      document.getElementById("progress-fill").style.width = `${pct}%`;
+
+      // Show/hide submit area
+      const submitArea = document.getElementById("submit-area");
+      const incomplete = document.getElementById("submit-incomplete");
+      const complete = document.getElementById("submit-complete");
+
+      if (answered > 0) {
+        submitArea.classList.remove("hidden");
+        if (answered < total) {
+          incomplete.classList.remove("hidden");
+          complete.classList.add("hidden");
+          document.getElementById("remaining-count").textContent = total - answered;
+        } else {
+          incomplete.classList.add("hidden");
+          complete.classList.remove("hidden");
+        }
+      }
+    }
+
+    function downloadCSV() {
+      const name = document.getElementById("respondent-name").value.trim() || "Anónimo";
+      const comments = document.getElementById("comments").value.trim();
+      const timestamp = new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
+
+      let csv = "Función,Respuesta,Descripción\n";
+
+      FEATURES.forEach(f => {
+        const rating = ratings[f.id] ? RATINGS[ratings[f.id]].value : "Sin respuesta";
+        // Escape quotes in CSV
+        const escapedName = `"${f.name.replace(/"/g, '""')}"`;
+        const escapedDesc = `"${f.description.replace(/"/g, '""')}"`;
+        const escapedRating = `"${rating}"`;
+        csv += `${escapedName},${escapedRating},${escapedDesc}\n`;
+      });
+
+      csv += `\n"Nombre","${name.replace(/"/g, '""')}",""\n`;
+      csv += `"Fecha","${timestamp}",""\n`;
+      if (comments) {
+        csv += `"Comentarios","${comments.replace(/"/g, '""')}",""\n`;
+      }
+
+      // Summary counts
+      const counts = { no: 0, nice: 0, yes: 0, unanswered: 0 };
+      FEATURES.forEach(f => {
+        if (ratings[f.id]) counts[ratings[f.id]]++;
+        else counts.unanswered++;
+      });
+      csv += `\n"Resumen","",""\n`;
+      csv += `"Sí necesario","${counts.yes}",""\n`;
+      csv += `"Sería bueno tener","${counts.nice}",""\n`;
+      csv += `"No necesario","${counts.no}",""\n`;
+      if (counts.unanswered > 0) csv += `"Sin respuesta","${counts.unanswered}",""\n`;
+
+      // Download
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `repaircrm-evaluacion-${name.toLowerCase().replace(/\s+/g, "-")}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Init
+    renderFeatures();
+    updateProgress();
+  </script>
+</body>
+</html>
