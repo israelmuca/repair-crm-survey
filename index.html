@@ -110,14 +110,14 @@
           </p>
         </div>
         <button
-          id="download-btn"
-          onclick="downloadCSV()"
+          id="submit-btn"
+          onclick="submitSurvey()"
           class="mt-3 inline-flex items-center gap-2 bg-brand-600 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-brand-700 active:scale-95 transition-all"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          Descargar resultados (CSV)
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Enviar respuestas
         </button>
-        <p class="text-xs text-gray-400 mt-2">Envía el archivo por WhatsApp</p>
+        <p id="submit-hint" class="text-xs text-gray-400 mt-2">Tus respuestas se guardan automáticamente</p>
       </div>
     </div>
 
@@ -501,56 +501,49 @@
       }
     }
 
-    function downloadCSV() {
+    // ── Replace with your Google Apps Script Web App URL ──
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIovT_5tLSxBl4Fh4iIUlBfu6eh4S38R3adzr4AF7ECTQ2Q09lHvN67zzKHjebjcY6/exec";
+
+    async function submitSurvey() {
       const name = document.getElementById("respondent-name").value.trim() || "Anónimo";
       const comments = document.getElementById("comments").value.trim();
       const timestamp = new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
 
-      let csv = "Función,Respuesta,Categoría,Descripción\n";
+      const features = FEATURES.map(f => ({
+        name: f.name,
+        rating: ratings[f.id] ? RATINGS[ratings[f.id]].value : "Sin respuesta"
+      }));
 
-      // Base features
-      BASE_FEATURES.forEach(f => {
-        const escapedName = `"${f.name.replace(/"/g, '""')}"`;
-        csv += `${escapedName},"Incluido","Base",""\n`;
-      });
+      const btn = document.getElementById("submit-btn");
+      const hint = document.getElementById("submit-hint");
+      btn.disabled = true;
+      btn.textContent = "Enviando...";
+      btn.classList.add("opacity-50");
 
-      // Rated features
-      FEATURES.forEach(f => {
-        const rating = ratings[f.id] ? RATINGS[ratings[f.id]].value : "Sin respuesta";
-        const escapedName = `"${f.name.replace(/"/g, '""')}"`;
-        const escapedDesc = `"${f.description.replace(/"/g, '""')}"`;
-        const escapedRating = `"${rating}"`;
-        csv += `${escapedName},${escapedRating},"Evaluar",${escapedDesc}\n`;
-      });
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, comments, timestamp, features })
+        });
 
-      csv += `\n"Nombre","${name.replace(/"/g, '""')}","",""\n`;
-      csv += `"Fecha","${timestamp}","",""\n`;
-      if (comments) {
-        csv += `"Comentarios","${comments.replace(/"/g, '""')}","",""\n`;
+        btn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          ¡Enviado!
+        `;
+        btn.classList.remove("bg-brand-600", "hover:bg-brand-700", "opacity-50");
+        btn.classList.add("bg-emerald-600");
+        hint.textContent = "Gracias por tu tiempo. Ya puedes cerrar esta página.";
+        hint.classList.remove("text-gray-400");
+        hint.classList.add("text-emerald-600", "font-medium");
+      } catch (err) {
+        btn.textContent = "Error — intenta de nuevo";
+        btn.classList.remove("opacity-50");
+        btn.classList.add("bg-red-600");
+        btn.disabled = false;
+        hint.textContent = "No se pudo enviar. Verifica tu conexión e intenta de nuevo.";
       }
-
-      // Summary counts
-      const counts = { no: 0, nice: 0, yes: 0, unanswered: 0 };
-      FEATURES.forEach(f => {
-        if (ratings[f.id]) counts[ratings[f.id]]++;
-        else counts.unanswered++;
-      });
-      csv += `\n"Resumen","","",""\n`;
-      csv += `"Sí necesario","${counts.yes}","",""\n`;
-      csv += `"Sería bueno tener","${counts.nice}","",""\n`;
-      csv += `"No necesario","${counts.no}","",""\n`;
-      if (counts.unanswered > 0) csv += `"Sin respuesta","${counts.unanswered}","",""\n`;
-
-      // Download
-      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `repaircrm-evaluacion-${name.toLowerCase().replace(/\s+/g, "-")}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
 
     // Init
