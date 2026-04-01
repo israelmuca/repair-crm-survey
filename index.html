@@ -610,17 +610,26 @@
     .confetti-piece {
       position: fixed;
       z-index: 200;
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
       pointer-events: none;
-      animation: confettiFall 2.5s cubic-bezier(0.25, 0, 0.5, 1) forwards;
     }
 
-    @keyframes confettiFall {
-      0% { transform: translateY(-20vh) rotate(0deg); opacity: 1; }
-      80% { opacity: 1; }
-      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+    @keyframes confettiBurst {
+      0% {
+        transform: translate(var(--dx), 0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate(calc(var(--dx) * 2.5), calc(100vh + 40px)) rotate(var(--spin)) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    @keyframes confettiFlutter {
+      0%, 100% { transform: rotateY(0deg); }
+      50% { transform: rotateY(180deg); }
     }
 
     /* ── Bottom bar ── */
@@ -1095,19 +1104,55 @@
     // ── Confetti ─────────────────────────────────────────────────────────
 
     function launchConfetti() {
-      const colors = ["#f59e0b", "#22c55e", "#3b82f6", "#ef4444", "#a855f7", "#ec4899"];
-      for (let i = 0; i < 60; i++) {
-        const el = document.createElement("div");
-        el.className = "confetti-piece";
-        el.style.left = Math.random() * 100 + "vw";
-        el.style.background = colors[Math.floor(Math.random() * colors.length)];
-        el.style.animationDelay = Math.random() * 0.6 + "s";
-        el.style.animationDuration = (2 + Math.random() * 1.5) + "s";
-        el.style.width = (6 + Math.random() * 6) + "px";
-        el.style.height = (6 + Math.random() * 6) + "px";
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 4000);
+      const colors = ["#f59e0b", "#fbbf24", "#22c55e", "#4ade80", "#3b82f6", "#60a5fa", "#ef4444", "#a855f7", "#ec4899", "#f472b6"];
+      const shapes = ["rect", "circle", "strip"];
+
+      function burst(originX, delay) {
+        for (let i = 0; i < 40; i++) {
+          setTimeout(() => {
+            const el = document.createElement("div");
+            el.className = "confetti-piece";
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const size = 6 + Math.random() * 8;
+
+            if (shape === "rect") {
+              el.style.width = size + "px";
+              el.style.height = size * 0.6 + "px";
+              el.style.borderRadius = "2px";
+            } else if (shape === "circle") {
+              el.style.width = size * 0.7 + "px";
+              el.style.height = size * 0.7 + "px";
+              el.style.borderRadius = "50%";
+            } else {
+              el.style.width = size * 1.5 + "px";
+              el.style.height = size * 0.3 + "px";
+              el.style.borderRadius = "1px";
+            }
+
+            el.style.background = color;
+            el.style.left = originX + (Math.random() - 0.5) * 30 + "vw";
+            el.style.top = "-5vh";
+
+            const dx = (Math.random() - 0.5) * 120;
+            const spin = (300 + Math.random() * 1000) * (Math.random() > 0.5 ? 1 : -1);
+            el.style.setProperty("--dx", dx + "px");
+            el.style.setProperty("--spin", spin + "deg");
+
+            const duration = 2.5 + Math.random() * 2;
+            el.style.animation = `confettiBurst ${duration}s cubic-bezier(0.15, 0.8, 0.3, 1) forwards, confettiFlutter ${0.3 + Math.random() * 0.4}s ease-in-out infinite`;
+            el.style.animationDelay = `${Math.random() * 0.3}s`;
+
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), (duration + 1) * 1000);
+          }, delay + Math.random() * 400);
+        }
       }
+
+      // Three bursts: left, center, right — staggered
+      burst(25, 0);
+      burst(50, 150);
+      burst(75, 300);
     }
 
     // ── Share link ───────────────────────────────────────────────────────
