@@ -2,552 +2,1109 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RepairCRM — Priorización de funciones</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
-          colors: {
-            brand: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
-          }
-        }
-      }
-    }
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>¿Tienes taller de reparación? Queremos tu opinión</title>
+  <meta name="description" content="Estamos construyendo el sistema que los talleres en México merecen. 2 minutos, 3 preguntas. Tu respuesta decide qué construimos primero.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="¿Tienes taller de reparación? Queremos tu opinión">
+  <meta property="og:description" content="Estamos construyendo el sistema que los talleres en México merecen. Tu respuesta decide qué construimos primero.">
+  <meta property="og:image" content="https://encuesta.israelmuca.dev/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="¿Tienes taller de reparación? Queremos tu opinión">
+  <meta name="twitter:description" content="Estamos construyendo el sistema que los talleres en México merecen.">
+  <meta name="twitter:image" content="https://encuesta.israelmuca.dev/og-image.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    * { font-family: 'Inter', system-ui, sans-serif; }
-    .rating-btn { transition: all 0.15s ease; }
-    .rating-btn[data-selected="true"] { transform: scale(1.05); }
-    .feature-card { transition: all 0.2s ease; }
-    .feature-card[data-answered="true"] { opacity: 0.75; }
-    .feature-card[data-answered="true"]:hover { opacity: 1; }
-    .progress-bar { transition: width 0.3s ease; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #0c0a09;
+      --surface: #1c1917;
+      --surface-hover: #292524;
+      --border: #3f3a36;
+      --border-glow: #b45309;
+      --text: #fafaf9;
+      --text-dim: #a8a29e;
+      --text-muted: #78716c;
+      --amber: #f59e0b;
+      --amber-dim: #b45309;
+      --amber-glow: rgba(245, 158, 11, 0.15);
+      --amber-glow-strong: rgba(245, 158, 11, 0.3);
+      --green: #22c55e;
+      --green-glow: rgba(34, 197, 94, 0.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    html { background: var(--bg); }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      overflow-x: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    h1, h2, h3, .heading { font-family: 'Sora', system-ui, sans-serif; }
+
+    /* ── Animated background ── */
+    .bg-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(245, 158, 11, 0.08), transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 90%, rgba(180, 83, 9, 0.06), transparent 50%),
+        radial-gradient(ellipse 50% 50% at 50% 50%, rgba(245, 158, 11, 0.03), transparent 70%);
+      animation: meshDrift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes meshDrift {
+      0% { transform: scale(1) translateY(0); }
+      100% { transform: scale(1.1) translateY(-20px); }
+    }
+
+    /* ── Noise texture overlay ── */
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+
+    /* ── Main container ── */
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 0 20px;
+      padding-top: max(20px, env(safe-area-inset-top));
+      padding-bottom: max(100px, calc(env(safe-area-inset-bottom) + 80px));
+    }
+
+    /* ── Progress bar ── */
+    .progress-track {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--surface);
+      z-index: 100;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--amber-dim), var(--amber));
+      transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 0 2px 2px 0;
+      box-shadow: 0 0 12px var(--amber-glow-strong);
+    }
+
+    /* ── Step transitions ── */
+    .step {
+      display: none;
+      animation: stepIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .step.active { display: block; }
+
+    .step.exiting {
+      display: block;
+      animation: stepOut 0.25s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+    }
+
+    @keyframes stepIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes stepOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-16px); }
+    }
+
+    /* ── Intro screen ── */
+    .intro-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--amber-glow);
+      border: 1px solid var(--amber-dim);
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--amber);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-family: 'Sora', system-ui, sans-serif;
+    }
+
+    .intro-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin: 24px 0 16px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--text-dim) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .intro-sub {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-dim);
+      margin-bottom: 32px;
+    }
+
+    .intro-sub strong { color: var(--text); font-weight: 600; }
+
+    .intro-time {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--amber) 0%, #d97706 100%);
+      color: #0c0a09;
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 100%);
+    }
+
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-primary:disabled {
+      opacity: 0.3;
+      cursor: default;
+      transform: none;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-secondary:active { transform: scale(0.97); background: var(--surface-hover); }
+
+    /* ── Step header ── */
+    .step-header {
+      margin-bottom: 24px;
+      padding-top: 20px;
+    }
+
+    .step-label {
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+    }
+
+    .step-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* ── Selection counter ── */
+    .counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+      transition: all 0.3s;
+    }
+
+    .counter.complete {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-glow);
+    }
+
+    .counter-num {
+      font-variant-numeric: tabular-nums;
+      min-width: 1ch;
+      text-align: center;
+      color: var(--amber);
+      transition: color 0.3s;
+    }
+
+    .counter.complete .counter-num { color: var(--green); }
+
+    /* ── Selectable cards ── */
+    .card-grid { display: flex; flex-direction: column; gap: 10px; }
+
+    .sel-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sel-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--amber-glow);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .sel-card:active { transform: scale(0.98); }
+
+    .sel-card.selected {
+      border-color: var(--amber-dim);
+      box-shadow: 0 0 0 1px var(--amber-dim), 0 4px 20px var(--amber-glow);
+    }
+
+    .sel-card.selected::before { opacity: 1; }
+
+    .sel-card.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .sel-card .icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sel-card .card-text {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sel-card .card-title {
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .sel-card .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .sel-card .check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sel-card.selected .check {
+      background: var(--amber);
+      border-color: var(--amber);
+    }
+
+    .sel-card.selected .check::after {
+      content: '✓';
+      color: #0c0a09;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* ── Compact feature cards (step 2) ── */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .feat-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+      padding: 14px 8px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+      min-height: 80px;
+    }
+
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--amber-glow);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .feat-card:active { transform: scale(0.96); }
+
+    .feat-card.selected {
+      border-color: var(--amber-dim);
+      box-shadow: 0 0 0 1px var(--amber-dim), 0 2px 12px var(--amber-glow);
+    }
+
+    .feat-card.selected::before { opacity: 1; }
+
+    .feat-card.disabled {
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .feat-card .feat-icon {
+      font-size: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feat-card .feat-name {
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feat-card .feat-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feat-card .feat-check {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      color: #0c0a09;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 2;
+    }
+
+    .feat-card.selected .feat-check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* ── Form inputs (step 3) ── */
+    .form-group { margin-bottom: 20px; }
+
+    .form-label {
+      display: block;
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .form-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .radio-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .radio-pill {
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .radio-pill:active { transform: scale(0.96); }
+
+    .radio-pill.selected {
+      border-color: var(--amber-dim);
+      color: var(--amber);
+      background: var(--amber-glow);
+    }
+
+    .text-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .text-input:focus { border-color: var(--amber-dim); }
+    .text-input::placeholder { color: var(--text-muted); }
+
+    /* ── Completion screen ── */
+    .completion {
+      text-align: center;
+      padding-top: 60px;
+    }
+
+    .completion-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: var(--green-glow);
+      border: 2px solid var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .completion h2 {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .completion p {
+      font-size: 15px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: #25d366;
+      color: white;
+      font-family: 'Sora', system-ui, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .share-btn:active { transform: scale(0.96); }
+
+    /* ── Confetti ── */
+    .confetti-piece {
+      position: fixed;
+      z-index: 200;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      pointer-events: none;
+      animation: confettiFall 2.5s cubic-bezier(0.25, 0, 0.5, 1) forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(-20vh) rotate(0deg); opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── Bottom bar ── */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      background: linear-gradient(to top, var(--bg) 70%, transparent);
+      z-index: 50;
+    }
+
+    .bottom-bar-inner {
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen">
+<body>
+  <div class="bg-mesh"></div>
+  <div class="noise"></div>
 
-  <!-- Header -->
-  <header class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
-    <div class="max-w-2xl mx-auto px-4 py-3">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-lg font-bold text-gray-900">RepairCRM</h1>
-          <p class="text-xs text-gray-500">Priorización de funciones</p>
-        </div>
-        <div class="text-right">
-          <span id="progress-text" class="text-sm font-semibold text-brand-600">0 / 0</span>
-          <div class="w-24 h-1.5 bg-gray-200 rounded-full mt-1">
-            <div id="progress-fill" class="progress-bar h-full bg-brand-600 rounded-full" style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
 
-  <!-- Intro -->
-  <main class="max-w-2xl mx-auto px-4 py-6 pb-32">
-    <div id="intro" class="mb-8 bg-white rounded-xl border border-gray-200 p-5">
-      <h2 class="text-xl font-bold mb-2">¡Hola! 👋</h2>
-      <p class="text-sm text-gray-600 leading-relaxed mb-3">
-        Estamos construyendo <strong>RepairCRM</strong>, un sistema para talleres de reparación.
-        Tu opinión nos ayuda a decidir qué construir primero.
-      </p>
-      <p class="text-sm text-gray-600 leading-relaxed mb-3">
-        Algunas funciones son <strong>base</strong> del sistema (ya incluidas). Para las demás,
-        selecciona qué tan importante es cada una para tu negocio:
-      </p>
-      <div class="flex flex-col gap-2 text-sm">
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-blue-100 border-2 border-blue-400"></span>
-          <span><strong>Incluido</strong> — Ya viene en el sistema base</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-red-100 border-2 border-red-400"></span>
-          <span><strong>No necesario</strong> — No lo usaría</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-amber-100 border-2 border-amber-400"></span>
-          <span><strong>Sería bueno</strong> — Útil pero puedo vivir sin él</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="inline-block w-3 h-3 rounded-full bg-emerald-100 border-2 border-emerald-400"></span>
-          <span><strong>Sí necesario</strong> — Lo necesito para usar el sistema</span>
-        </div>
-      </div>
-    </div>
+  <div class="container">
 
-    <!-- Name input -->
-    <div class="mb-6 bg-white rounded-xl border border-gray-200 p-5">
-      <label for="respondent-name" class="block text-sm font-semibold mb-2">Tu nombre</label>
-      <input
-        type="text"
-        id="respondent-name"
-        placeholder="Ej. Juan Pérez"
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-      >
-    </div>
-
-    <!-- Content rendered by JS -->
-    <div id="content" class="space-y-4"></div>
-
-    <!-- Submit area -->
-    <div id="submit-area" class="hidden mt-8">
-      <div class="bg-white rounded-xl border border-gray-200 p-5 text-center">
-        <div id="submit-incomplete" class="hidden">
-          <p class="text-sm text-amber-600 font-medium mb-2">
-            Faltan <span id="remaining-count"></span> funciones por evaluar
-          </p>
-          <p class="text-xs text-gray-500">Puedes descargar resultados parciales o completar todas las evaluaciones.</p>
+    <!-- STEP 0: Intro -->
+    <div class="step active" id="step0">
+      <div style="padding-top: 15vh;">
+        <div class="intro-badge">
+          <span>&#9881;</span>
+          <span>Próximamente</span>
         </div>
-        <div id="submit-complete" class="hidden">
-          <p class="text-sm text-emerald-600 font-medium mb-2">
-            ✓ ¡Todas las funciones evaluadas!
-          </p>
+        <h1 class="intro-title">Estamos construyendo el sistema que los talleres de reparación en México merecen.</h1>
+        <p class="intro-sub">
+          Queremos saber qué es lo más importante para <strong>tu negocio</strong>. Tu respuesta definirá qué construimos primero.
+        </p>
+        <div class="intro-time">
+          <span>&#9202;</span>
+          <span>2 minutos — 3 preguntas rápidas</span>
         </div>
-        <button
-          id="submit-btn"
-          onclick="submitSurvey()"
-          class="mt-3 inline-flex items-center gap-2 bg-brand-600 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-brand-700 active:scale-95 transition-all"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-          Enviar respuestas
+        <button class="btn-primary" onclick="goToStep(1)">
+          Empezar
+          <span>&#8594;</span>
         </button>
-        <p id="submit-hint" class="text-xs text-gray-400 mt-2">Tus respuestas se guardan automáticamente</p>
       </div>
     </div>
 
-    <!-- Optional comments -->
-    <div class="mt-6 bg-white rounded-xl border border-gray-200 p-5">
-      <label for="comments" class="block text-sm font-semibold mb-2">Comentarios adicionales (opcional)</label>
-      <textarea
-        id="comments"
-        rows="3"
-        placeholder="¿Hay algo más que te gustaría que tuviera el sistema? ¿Algo que uses hoy y no ves en la lista?"
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
-      ></textarea>
+    <!-- STEP 1: Pain points -->
+    <div class="step" id="step1">
+      <div class="step-header">
+        <div class="step-label">Paso 1 de 3</div>
+        <h2 class="step-title">&#x1F525; ¿Cuál es tu mayor dolor?</h2>
+        <p class="step-desc">Elige los <strong>2 problemas</strong> que más te afectan en tu día a día.</p>
+      </div>
+      <div class="counter" id="painCounter">
+        <span>Seleccionados:</span>
+        <span class="counter-num" id="painCount">0</span>
+        <span>/ 2</span>
+      </div>
+      <div class="card-grid" id="painGrid"></div>
     </div>
-  </main>
+
+    <!-- STEP 2: Features -->
+    <div class="step" id="step2">
+      <div class="step-header">
+        <div class="step-label">Paso 2 de 3</div>
+        <h2 class="step-title">&#x1F3AF; Elige las 5 más importantes</h2>
+        <p class="step-desc">Si solo pudieras tener <strong>5 funciones</strong>, ¿cuáles elegirías?</p>
+      </div>
+      <div class="counter" id="featCounter">
+        <span>Seleccionadas:</span>
+        <span class="counter-num" id="featCount">0</span>
+        <span>/ 5</span>
+      </div>
+      <div class="feat-grid" id="featGrid"></div>
+    </div>
+
+    <!-- STEP 3: About + email -->
+    <div class="step" id="step3">
+      <div class="step-header">
+        <div class="step-label">Paso 3 de 3</div>
+        <h2 class="step-title">&#x1F3ED; Cuéntanos de tu taller</h2>
+        <p class="step-desc">Para entender mejor tu contexto.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">¿Usas algún sistema hoy?</label>
+        <div class="radio-group" id="systemGroup"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">¿Cuántas reparaciones al mes?</label>
+        <div class="radio-group" id="repairsGroup"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">¿Cuántos empleados?</label>
+        <div class="radio-group" id="employeesGroup"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">¿Cuántas facturas CFDI emites al mes?</label>
+        <div class="radio-group" id="cfdiGroup"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label class="form-label">Tu nombre <span style="color: var(--text-muted); font-weight: 400;">(opcional)</span></label>
+        <input type="text" class="text-input" id="nameInput" placeholder="Ej. Juan Pérez" autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tu correo &#x1F4E7;</label>
+        <input type="email" class="text-input" id="emailInput" placeholder="juan@ejemplo.com" autocomplete="email" inputmode="email">
+        <p class="form-hint">Solo lo usaremos para invitarte a la beta. Sin spam, prometido.</p>
+      </div>
+    </div>
+
+    <!-- STEP 4: Completion -->
+    <div class="step" id="step4">
+      <div class="completion">
+        <div class="completion-icon">&#10003;</div>
+        <h2>¡Gracias! Estás en la lista.</h2>
+        <p>Te avisaremos cuando esté listo.<br>Tu opinión va a definir lo que construimos.</p>
+        <a class="share-btn" id="shareBtn" href="#" target="_blank">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.75.75 0 00.917.918l4.462-1.496A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.73-6.012-1.966l-.42-.316-2.65.888.886-2.644-.346-.435A9.955 9.955 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/></svg>
+          Compartir con un amigo
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom navigation bar -->
+  <div class="bottom-bar" id="bottomBar" style="display: none;">
+    <div class="bottom-bar-inner">
+      <button class="btn-primary" id="nextBtn" onclick="nextStep()" disabled>
+        Continuar
+        <span>&#8594;</span>
+      </button>
+    </div>
+  </div>
 
   <script>
-    // ── Base features (shown as "included", not rated) ──────────────────
-    const BASE_FEATURES = [
-      {
-        name: "Tickets / Órdenes de trabajo",
-        items: [
-          "Crear ticket paso a paso: cliente, dispositivo, problema",
-          "Estados configurables (Recibido → Diagnosticando → Reparando → Listo → Entregado)",
-          "Notas internas del equipo",
-          "Timeline automático de todo lo que pasa en el ticket",
-          "Los tickets no se pueden borrar, solo cancelar con autorización"
-        ]
-      },
-      {
-        name: "Gestión de clientes",
-        items: [
-          "Lista con búsqueda por nombre, teléfono o correo",
-          "Historial completo: todos los tickets, cuánto ha gastado, última visita",
-          "Notas internas sobre el cliente",
-          "Detección de duplicados al crear clientes nuevos"
-        ]
-      },
-      {
-        name: "Registro de pagos básico",
-        items: [
-          "Pagos parciales o totales por ticket",
-          "Métodos: efectivo, SPEI, tarjeta",
-          "Ver saldo pendiente por ticket"
-        ]
-      }
+    // ── Data ─────────────────────────────────────────────────────────────
+
+    const PAINS = [
+      { id: "tracking", icon: "&#128269;", title: "Pierdo el rastro de reparaciones", desc: "No sé en qué va cada equipo" },
+      { id: "whatsapp", icon: "&#128241;", title: "Los clientes me preguntan todo el tiempo", desc: "WhatsApp no para con '¿ya está listo?'" },
+      { id: "cashflow", icon: "&#128176;", title: "No sé cuánto dinero entra y sale", desc: "Cero visibilidad de mis finanzas" },
+      { id: "invoicing", icon: "&#128203;", title: "No puedo facturar fácil", desc: "CFDI es complicado y lento" },
+      { id: "inventory", icon: "&#128230;", title: "No sé qué partes tengo", desc: "Mi inventario es un desastre" },
+      { id: "processes", icon: "&#128101;", title: "Mi equipo no sigue procesos", desc: "Cada quien hace lo que quiere" },
+      { id: "image", icon: "&#128188;", title: "No tengo un sistema profesional", desc: "Quiero verme más serio con mis clientes" },
     ];
 
-    // ── Features to rate ────────────────────────────────────────────────
     const FEATURES = [
-      {
-        id: "fotos",
-        name: "Fotos en tickets",
-        description: "Evidencia visual del proceso de reparación",
-        items: [
-          "Subir fotos al ticket desde el celular",
-          "Categorías: antes, durante, después, diagnóstico",
-          "El cliente puede ver las fotos en su portal",
-          "Adjuntar comprobante de pago como foto"
-        ]
-      },
-      {
-        id: "catalogo",
-        name: "Catálogo de servicios y productos",
-        description: "Lista centralizada de lo que ofrece tu taller",
-        items: [
-          "Servicios con nombre y precio (ej. \"Cambio de pantalla\")",
-          "Productos/refacciones con precio y SKU",
-          "Categorías de dos niveles (ej. Teléfono → Pantallas)",
-          "Búsqueda inteligente al agregar ítems a cotizaciones"
-        ]
-      },
-      {
-        id: "cotizaciones",
-        name: "Cotizaciones",
-        description: "Presupuestos formales dentro de cada ticket",
-        items: [
-          "Crear cotización con ítems del catálogo o personalizados",
-          "Descuentos e impuestos por ítem",
-          "Historial de versiones (si el cliente rechaza, crear nueva)",
-          "Enviar cotización al cliente por WhatsApp"
-        ]
-      },
-      {
-        id: "portal",
-        name: "Portal para clientes",
-        description: "Página web donde el cliente da seguimiento a su reparación — sin app, sin login",
-        items: [
-          "Link único que envías por WhatsApp",
-          "Ver estado actual de la reparación en tiempo real",
-          "Ver fotos del diagnóstico y reparación",
-          "Ver cotización y aprobar/rechazar desde ahí",
-          "Notas visibles para el cliente (actualizaciones del técnico)",
-          "Ver historial completo de lo que ha pasado",
-          "Solicitar su factura CFDI directamente (si está habilitado)"
-        ]
-      },
-      {
-        id: "whatsapp",
-        name: "Integración con WhatsApp",
-        description: "Comunicación con clientes con un click — abre WhatsApp con mensaje pre-llenado",
-        items: [
-          "Abrir WhatsApp con un click desde cualquier ticket o cliente",
-          "Mensajes pre-escritos: ticket creado, cotización lista, equipo listo para recoger",
-          "Enviar link del portal al cliente automáticamente",
-          "Plantillas personalizables para situaciones comunes"
-        ]
-      },
-      {
-        id: "kanban",
-        name: "Vista Kanban",
-        description: "Tablero visual para ver tickets por estado",
-        items: [
-          "Columnas por estado (Recibido, Diagnosticando, Reparando, etc.)",
-          "Arrastrar tickets entre columnas para cambiar estado",
-          "Vista ideal para pantalla de escritorio o tablet en el taller"
-        ]
-      },
-      {
-        id: "equipo",
-        name: "Gestión de equipo y roles",
-        description: "Control de acceso para empleados",
-        items: [
-          "3 roles: Dueño (todo), Gerente (reportes + facturación), Técnico (solo tickets y clientes)",
-          "Invitar empleados por correo",
-          "PIN de autorización para operaciones sensibles (cancelar ticket, anular pago)",
-          "Asignar técnicos a tickets"
-        ]
-      },
-      {
-        id: "dashboard",
-        name: "Dashboard y reportes",
-        description: "Resumen visual del estado del taller",
-        items: [
-          "Vista de \"qué necesita atención\": tickets vencidos, listos para recoger, cotizaciones pendientes",
-          "Métricas: tickets abiertos, completados, ingresos del mes, tiempo promedio de reparación",
-          "Resumen del día",
-          "Exportar tickets y pagos a CSV"
-        ]
-      },
-      {
-        id: "impresion",
-        name: "Impresión térmica",
-        description: "Recibos y etiquetas desde el navegador",
-        items: [
-          "Imprimir recibo en impresora térmica o normal",
-          "Etiquetas QR de 50x30mm para pegar al equipo del cliente",
-          "QR en recibo que lleva al portal del cliente"
-        ]
-      },
-      {
-        id: "mercadopago",
-        name: "Cobros en línea con MercadoPago",
-        description: "Tu cliente paga con tarjeta, OXXO o SPEI — tú solo agregas tu clave de MercadoPago",
-        items: [
-          "Generar links de pago desde la cotización",
-          "Links separados: uno para anticipo, otro para saldo",
-          "El pago se registra automáticamente en el ticket cuando el cliente paga",
-          "El cliente puede pagar desde el portal",
-          "El dinero va directo a TU cuenta de MercadoPago"
-        ]
-      },
-      {
-        id: "cfdi",
-        name: "Facturación CFDI",
-        description: "Facturas fiscales válidas ante el SAT",
-        items: [
-          "Generar CFDI 4.0 con un click desde el ticket",
-          "Auto-factura: el cliente pone su RFC en el portal y genera su propia factura",
-          "Factura de \"Público en General\" para ventas consolidadas",
-          "Cancelación dentro de la ventana del SAT"
-        ]
-      },
-      {
-        id: "inventario",
-        name: "Inventario serializado",
-        description: "Rastreo de partes individuales por número de serie o IMEI",
-        items: [
-          "Cada parte de alto valor tiene su propio número de serie",
-          "Historial completo: de dónde vino, cuánto costó, en qué ticket se usó",
-          "Créditos de desbloqueo como productos digitales (Magma, Chimera, etc.)",
-          "Control de stock por unidad individual"
-        ]
-      },
-      {
-        id: "cosecha",
-        name: "Cosecha de partes (harvesting)",
-        description: "Comprar equipos dañados y reciclar partes funcionales",
-        items: [
-          "Registrar compra de dispositivo dañado",
-          "Desmontar y registrar cada parte funcional como inventario",
-          "Cálculo automático de costo por parte",
-          "Trazabilidad: de qué equipo salió cada parte"
-        ]
-      },
-      {
-        id: "caja",
-        name: "Conteo ciego de caja",
-        description: "Anti-robo: verificar efectivo al cerrar turno",
-        items: [
-          "El empleado cuenta el efectivo ANTES de ver cuánto debería haber",
-          "Se registra la diferencia (varianza)",
-          "Si la diferencia es grande, se pide explicación obligatoria",
-          "El dueño ve reporte de varianzas por empleado"
-        ]
-      },
-      {
-        id: "garantia",
-        name: "Reparaciones de garantía",
-        description: "Vincular tickets de garantía con la reparación original",
-        items: [
-          "Marcar un ticket como garantía",
-          "Vincularlo al ticket original",
-          "Trazabilidad: ver qué reparación generó la garantía"
-        ]
-      },
-      {
-        id: "notificaciones",
-        name: "Notificaciones dentro del sistema",
-        description: "Alertas para el equipo cuando pasan cosas",
-        items: [
-          "Centro de notificaciones con contador de no leídas",
-          "Alertas: cotización aprobada, ticket asignado, pago recibido, cambio de estado",
-          "Configurar quién recibe qué tipo de notificación"
-        ]
-      },
-      {
-        id: "multiubicacion",
-        name: "Multi-ubicación",
-        description: "Manejar varias sucursales desde una cuenta",
-        items: [
-          "Clientes y catálogo compartidos entre sucursales",
-          "Tickets separados por ubicación",
-          "Reportes por ubicación o consolidados",
-          "Empleados pueden pertenecer a una o más ubicaciones"
-        ]
-      },
-      {
-        id: "offline",
-        name: "App offline (PWA)",
-        description: "Funciona sin internet — se instala en el celular",
-        items: [
-          "Ver tickets, clientes y catálogo sin conexión",
-          "Crear tickets y notas sin internet",
-          "Sincronización automática al reconectarse",
-          "Se instala como app desde el navegador"
-        ]
-      }
+      { id: "fotos", icon: "&#128247;", name: "Fotos en tickets", desc: "Evidencia visual del proceso" },
+      { id: "catalogo", icon: "&#128218;", name: "Catálogo de servicios", desc: "Lista centralizada de precios" },
+      { id: "cotizaciones", icon: "&#128196;", name: "Cotizaciones", desc: "Presupuestos formales" },
+      { id: "portal", icon: "&#127760;", name: "Portal para clientes", desc: "Seguimiento sin app ni login" },
+      { id: "whatsapp", icon: "&#128172;", name: "WhatsApp", desc: "Mensajes pre-llenados con un click" },
+      { id: "kanban", icon: "&#128200;", name: "Vista Kanban", desc: "Tablero visual por estado" },
+      { id: "equipo", icon: "&#128101;", name: "Equipo y roles", desc: "Control de acceso" },
+      { id: "dashboard", icon: "&#128202;", name: "Dashboard y reportes", desc: "Métricas del taller" },
+      { id: "impresion", icon: "&#128424;", name: "Impresión térmica", desc: "Recibos y etiquetas QR" },
+      { id: "mercadopago", icon: "&#128179;", name: "Cobros (MercadoPago)", desc: "Pago con tarjeta, OXXO, SPEI" },
+      { id: "cfdi", icon: "&#128433;", name: "Facturación CFDI", desc: "Facturas válidas ante el SAT" },
+      { id: "inventario", icon: "&#128230;", name: "Inventario serializado", desc: "Rastreo por número de serie" },
+      { id: "cosecha", icon: "&#9851;", name: "Cosecha de partes", desc: "Reciclar partes funcionales" },
+      { id: "caja", icon: "&#128176;", name: "Conteo ciego de caja", desc: "Verificar efectivo al cerrar" },
+      { id: "garantia", icon: "&#128736;", name: "Garantías", desc: "Vincular con reparación original" },
+      { id: "notificaciones", icon: "&#128276;", name: "Notificaciones", desc: "Alertas dentro del sistema" },
+      { id: "multi", icon: "&#127970;", name: "Multi-ubicación", desc: "Varias sucursales, una cuenta" },
+      { id: "offline", icon: "&#128225;", name: "App offline (PWA)", desc: "Funciona sin internet" },
     ];
 
-    const RATINGS = {
-      no: { label: "No necesario", value: "No necesario", bg: "bg-red-50", border: "border-red-300", text: "text-red-700", ring: "ring-red-400" },
-      nice: { label: "Sería bueno", value: "Sería bueno tener", bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", ring: "ring-amber-400" },
-      yes: { label: "Sí necesario", value: "Sí necesario", bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", ring: "ring-emerald-400" }
+    const SYSTEMS = ["Excel / Hojas de cálculo", "Papel y libreta", "WhatsApp", "Otro CRM", "Nada"];
+    const REPAIRS = ["1–20", "21–50", "51–100", "101–200", "201+"];
+    const EMPLOYEES = ["Solo yo", "2–3", "4–7", "8+"];
+    const CFDI = ["Ninguna", "1–20", "21–50", "51–100", "101–200", "201+"];
+
+    // ── State ────────────────────────────────────────────────────────────
+
+    let currentStep = 0;
+    const state = {
+      pains: new Set(),
+      features: new Set(),
+      system: null,
+      repairs: null,
+      employees: null,
+      cfdi: null,
+      name: "",
+      email: "",
     };
 
-    const ratings = {};
-
-    function render() {
-      const container = document.getElementById("content");
-      let html = "";
-
-      // ── Base features section ──
-      html += `
-        <div class="mb-2">
-          <h2 class="text-base font-bold text-gray-900 mb-1">Funciones base</h2>
-          <p class="text-sm text-gray-500">Estas ya vienen incluidas en el sistema.</p>
-        </div>
-      `;
-
-      BASE_FEATURES.forEach(f => {
-        html += `
-          <div class="bg-blue-50/50 rounded-xl border border-blue-200 p-5">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">Incluido</span>
-              <h3 class="text-base font-bold text-gray-900">${f.name}</h3>
-            </div>
-            <ul class="space-y-1">
-              ${f.items.map(item => `
-                <li class="text-sm text-gray-600 flex items-start gap-2">
-                  <span class="text-blue-300 mt-0.5">✓</span>
-                  <span>${item}</span>
-                </li>
-              `).join("")}
-            </ul>
-          </div>
-        `;
-      });
-
-      // ── Rated features section ──
-      html += `
-        <div class="mt-8 mb-2">
-          <h2 class="text-base font-bold text-gray-900 mb-1">Evalúa estas funciones</h2>
-          <p class="text-sm text-gray-500">¿Qué tan importante es cada una para tu negocio?</p>
-        </div>
-      `;
-
-      let rateIdx = 0;
-      FEATURES.forEach(f => {
-        rateIdx++;
-        html += `
-          <div class="feature-card bg-white rounded-xl border border-gray-200 p-5" id="card-${f.id}" data-answered="false">
-            <div class="flex items-start justify-between mb-2">
-              <div>
-                <span class="text-xs font-medium text-gray-400">${rateIdx} / ${FEATURES.length}</span>
-                <h3 class="text-base font-bold text-gray-900 mt-0.5">${f.name}</h3>
-                <p class="text-sm text-gray-500">${f.description}</p>
-              </div>
-            </div>
-            <ul class="mt-3 space-y-1 mb-4">
-              ${f.items.map(item => `
-                <li class="text-sm text-gray-600 flex items-start gap-2">
-                  <span class="text-gray-300 mt-0.5">•</span>
-                  <span>${item}</span>
-                </li>
-              `).join("")}
-            </ul>
-            <div class="flex gap-2">
-              ${Object.entries(RATINGS).map(([key, r]) => `
-                <button
-                  class="rating-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 ${r.border} ${r.bg} ${r.text} opacity-60 hover:opacity-100"
-                  data-feature="${f.id}"
-                  data-rating="${key}"
-                  data-selected="false"
-                  onclick="setRating('${f.id}', '${key}')"
-                >
-                  ${r.label}
-                </button>
-              `).join("")}
-            </div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
+    // Restore from sessionStorage
+    const saved = sessionStorage.getItem("surveyState");
+    if (saved) {
+      try {
+        const s = JSON.parse(saved);
+        if (s.pains) s.pains.forEach(p => state.pains.add(p));
+        if (s.features) s.features.forEach(f => state.features.add(f));
+        state.system = s.system || null;
+        state.repairs = s.repairs || null;
+        state.employees = s.employees || null;
+        state.cfdi = s.cfdi || null;
+        state.name = s.name || "";
+        state.email = s.email || "";
+      } catch (e) {}
     }
 
-    function setRating(featureId, ratingKey) {
-      ratings[featureId] = ratingKey;
-
-      // Update button states
-      document.querySelectorAll(`[data-feature="${featureId}"]`).forEach(btn => {
-        const isSelected = btn.dataset.rating === ratingKey;
-        btn.dataset.selected = isSelected;
-        const r = RATINGS[btn.dataset.rating];
-        if (isSelected) {
-          btn.className = `rating-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 ${r.border} ${r.bg} ${r.text} opacity-100 ring-2 ${r.ring}`;
-        } else {
-          btn.className = `rating-btn flex-1 py-2 px-3 rounded-lg text-xs font-semibold border-2 border-gray-200 bg-gray-50 text-gray-400 opacity-60 hover:opacity-80`;
-        }
-      });
-
-      // Mark card
-      document.getElementById(`card-${featureId}`).dataset.answered = "true";
-
-      updateProgress();
+    function saveState() {
+      sessionStorage.setItem("surveyState", JSON.stringify({
+        pains: [...state.pains],
+        features: [...state.features],
+        system: state.system,
+        repairs: state.repairs,
+        employees: state.employees,
+        cfdi: state.cfdi,
+        name: state.name,
+        email: state.email,
+      }));
     }
+
+    // ── Shuffle ──────────────────────────────────────────────────────────
+
+    let shuffledFeatures = [...FEATURES];
+    const shuffleSeed = sessionStorage.getItem("shuffleSeed");
+    if (!shuffleSeed) {
+      // Fisher-Yates
+      for (let i = shuffledFeatures.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledFeatures[i], shuffledFeatures[j]] = [shuffledFeatures[j], shuffledFeatures[i]];
+      }
+      sessionStorage.setItem("shuffleSeed", JSON.stringify(shuffledFeatures.map(f => f.id)));
+    } else {
+      const order = JSON.parse(shuffleSeed);
+      shuffledFeatures = order.map(id => FEATURES.find(f => f.id === id)).filter(Boolean);
+    }
+
+    // ── Render ───────────────────────────────────────────────────────────
+
+    function renderPains() {
+      const grid = document.getElementById("painGrid");
+      grid.innerHTML = PAINS.map(p => `
+        <div class="sel-card ${state.pains.has(p.id) ? 'selected' : ''} ${state.pains.size >= 2 && !state.pains.has(p.id) ? 'disabled' : ''}"
+             onclick="togglePain('${p.id}')" data-id="${p.id}">
+          <div class="icon">${p.icon}</div>
+          <div class="card-text">
+            <div class="card-title">${p.title}</div>
+            <div class="card-desc">${p.desc}</div>
+          </div>
+          <div class="check"></div>
+        </div>
+      `).join("");
+      document.getElementById("painCount").textContent = state.pains.size;
+      const counter = document.getElementById("painCounter");
+      counter.classList.toggle("complete", state.pains.size === 2);
+      updateNextBtn();
+    }
+
+    function renderFeatures() {
+      const grid = document.getElementById("featGrid");
+      grid.innerHTML = shuffledFeatures.map(f => `
+        <div class="feat-card ${state.features.has(f.id) ? 'selected' : ''} ${state.features.size >= 5 && !state.features.has(f.id) ? 'disabled' : ''}"
+             onclick="toggleFeature('${f.id}')" data-id="${f.id}">
+          <div class="feat-check">&#10003;</div>
+          <div class="feat-icon">${f.icon}</div>
+          <div class="feat-name">${f.name}</div>
+          <div class="feat-desc">${f.desc}</div>
+        </div>
+      `).join("");
+      document.getElementById("featCount").textContent = state.features.size;
+      const counter = document.getElementById("featCounter");
+      counter.classList.toggle("complete", state.features.size === 5);
+      updateNextBtn();
+    }
+
+    function renderRadioGroup(containerId, options, stateKey) {
+      const group = document.getElementById(containerId);
+      group.innerHTML = options.map(opt => `
+        <div class="radio-pill ${state[stateKey] === opt ? 'selected' : ''}"
+             onclick="selectRadio('${stateKey}', '${opt}', '${containerId}')">
+          ${opt}
+        </div>
+      `).join("");
+    }
+
+    function renderStep3() {
+      renderRadioGroup("systemGroup", SYSTEMS, "system");
+      renderRadioGroup("repairsGroup", REPAIRS, "repairs");
+      renderRadioGroup("employeesGroup", EMPLOYEES, "employees");
+      renderRadioGroup("cfdiGroup", CFDI, "cfdi");
+      document.getElementById("nameInput").value = state.name;
+      document.getElementById("emailInput").value = state.email;
+      updateNextBtn();
+    }
+
+    // ── Interactions ─────────────────────────────────────────────────────
+
+    function togglePain(id) {
+      if (state.pains.has(id)) {
+        state.pains.delete(id);
+      } else if (state.pains.size < 2) {
+        state.pains.add(id);
+      }
+      saveState();
+      renderPains();
+    }
+
+    function toggleFeature(id) {
+      if (state.features.has(id)) {
+        state.features.delete(id);
+      } else if (state.features.size < 5) {
+        state.features.add(id);
+      }
+      saveState();
+      renderFeatures();
+    }
+
+    function selectRadio(stateKey, value, containerId) {
+      state[stateKey] = value;
+      saveState();
+      const optMap = { system: SYSTEMS, repairs: REPAIRS, employees: EMPLOYEES, cfdi: CFDI };
+      renderRadioGroup(containerId, optMap[stateKey], stateKey);
+      updateNextBtn();
+    }
+
+    // ── Input listeners (step 3) ─────────────────────────────────────────
+
+    document.getElementById("nameInput").addEventListener("input", e => {
+      state.name = e.target.value;
+      saveState();
+    });
+
+    document.getElementById("emailInput").addEventListener("input", e => {
+      state.email = e.target.value;
+      saveState();
+      updateNextBtn();
+    });
+
+    // ── Navigation ───────────────────────────────────────────────────────
 
     function updateProgress() {
-      const answered = Object.keys(ratings).length;
-      const total = FEATURES.length;
-      const pct = Math.round((answered / total) * 100);
+      const pct = [0, 25, 55, 85, 100][currentStep];
+      document.getElementById("progressFill").style.width = pct + "%";
+    }
 
-      document.getElementById("progress-text").textContent = `${answered} / ${total}`;
-      document.getElementById("progress-fill").style.width = `${pct}%`;
+    function updateNextBtn() {
+      const btn = document.getElementById("nextBtn");
+      let enabled = false;
+      if (currentStep === 1) enabled = state.pains.size === 2;
+      else if (currentStep === 2) enabled = state.features.size === 5;
+      else if (currentStep === 3) enabled = true; // email is optional for submit
+      btn.disabled = !enabled;
 
-      // Show/hide submit area
-      const submitArea = document.getElementById("submit-area");
-      const incomplete = document.getElementById("submit-incomplete");
-      const complete = document.getElementById("submit-complete");
-
-      if (answered > 0) {
-        submitArea.classList.remove("hidden");
-        if (answered < total) {
-          incomplete.classList.remove("hidden");
-          complete.classList.add("hidden");
-          document.getElementById("remaining-count").textContent = total - answered;
-        } else {
-          incomplete.classList.add("hidden");
-          complete.classList.remove("hidden");
-        }
+      if (currentStep === 3) {
+        btn.innerHTML = 'Enviar <span>&#10003;</span>';
+      } else {
+        btn.innerHTML = 'Continuar <span>&#8594;</span>';
       }
     }
 
-    // ── Replace with your Google Apps Script Web App URL ──
+    function goToStep(n) {
+      const current = document.getElementById("step" + currentStep);
+      current.classList.add("exiting");
+      current.classList.remove("active");
+
+      setTimeout(() => {
+        current.classList.remove("exiting");
+        currentStep = n;
+        const next = document.getElementById("step" + n);
+        next.classList.add("active");
+
+        // Show/hide bottom bar
+        document.getElementById("bottomBar").style.display = n > 0 && n < 4 ? "" : "none";
+
+        // Render step content
+        if (n === 1) renderPains();
+        if (n === 2) renderFeatures();
+        if (n === 3) renderStep3();
+
+        updateProgress();
+        updateNextBtn();
+        window.scrollTo(0, 0);
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      }, 250);
+    }
+
+    function nextStep() {
+      if (currentStep === 3) {
+        submitSurvey();
+        return;
+      }
+      goToStep(currentStep + 1);
+    }
+
+    // ── Submit ───────────────────────────────────────────────────────────
+
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIovT_5tLSxBl4Fh4iIUlBfu6eh4S38R3adzr4AF7ECTQ2Q09lHvN67zzKHjebjcY6/exec";
 
     async function submitSurvey() {
-      const name = document.getElementById("respondent-name").value.trim() || "Anónimo";
-      const comments = document.getElementById("comments").value.trim();
+      const btn = document.getElementById("nextBtn");
+      btn.disabled = true;
+      btn.innerHTML = "Enviando...";
+
+      const responseId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
       const timestamp = new Date().toLocaleString("es-MX", { timeZone: "America/Mexico_City" });
 
-      const features = FEATURES.map(f => ({
-        name: f.name,
-        rating: ratings[f.id] ? RATINGS[ratings[f.id]].value : "Sin respuesta"
-      }));
-
-      const btn = document.getElementById("submit-btn");
-      const hint = document.getElementById("submit-hint");
-      btn.disabled = true;
-      btn.textContent = "Enviando...";
-      btn.classList.add("opacity-50");
+      const payload = {
+        version: "v2",
+        responseId,
+        timestamp,
+        name: state.name.trim() || "Anónimo",
+        email: state.email.trim(),
+        pains: [...state.pains],
+        features: [...state.features],
+        system: state.system,
+        repairs: state.repairs,
+        employees: state.employees,
+        cfdi: state.cfdi,
+      };
 
       try {
         await fetch(SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, comments, timestamp, features })
+          body: JSON.stringify(payload),
         });
+      } catch (e) {
+        // no-cors won't error usually, but handle anyway
+      }
 
-        btn.innerHTML = `
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-          ¡Enviado!
-        `;
-        btn.classList.remove("bg-brand-600", "hover:bg-brand-700", "opacity-50");
-        btn.classList.add("bg-emerald-600");
-        hint.textContent = "Gracias por tu tiempo. Ya puedes cerrar esta página.";
-        hint.classList.remove("text-gray-400");
-        hint.classList.add("text-emerald-600", "font-medium");
-      } catch (err) {
-        btn.textContent = "Error — intenta de nuevo";
-        btn.classList.remove("opacity-50");
-        btn.classList.add("bg-red-600");
-        btn.disabled = false;
-        hint.textContent = "No se pudo enviar. Verifica tu conexión e intenta de nuevo.";
+      sessionStorage.removeItem("surveyState");
+      sessionStorage.removeItem("shuffleSeed");
+      goToStep(4);
+      launchConfetti();
+      setupShareLink();
+    }
+
+    // ── Confetti ─────────────────────────────────────────────────────────
+
+    function launchConfetti() {
+      const colors = ["#f59e0b", "#22c55e", "#3b82f6", "#ef4444", "#a855f7", "#ec4899"];
+      for (let i = 0; i < 60; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti-piece";
+        el.style.left = Math.random() * 100 + "vw";
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.animationDelay = Math.random() * 0.6 + "s";
+        el.style.animationDuration = (2 + Math.random() * 1.5) + "s";
+        el.style.width = (6 + Math.random() * 6) + "px";
+        el.style.height = (6 + Math.random() * 6) + "px";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
       }
     }
 
-    // Init
-    render();
+    // ── Share link ───────────────────────────────────────────────────────
+
+    function setupShareLink() {
+      const url = encodeURIComponent(window.location.href);
+      const text = encodeURIComponent("¡Están construyendo un sistema para talleres de reparación! Si tienes taller, contesta esta encuesta rápida:");
+      document.getElementById("shareBtn").href = `https://wa.me/?text=${text}%20${url}`;
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────────
+
     updateProgress();
   </script>
 </body>
