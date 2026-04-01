@@ -741,6 +741,11 @@
       <div class="divider"></div>
 
       <div class="form-group">
+        <label class="form-label">¿Algo más que quieras decirnos? <span style="color: var(--text-muted); font-weight: 400;">(opcional)</span></label>
+        <textarea class="text-input" id="commentsInput" rows="3" placeholder="¿Hay algo que uses hoy y no ves en la lista? ¿Algo que te gustaría que tuviera?" style="resize: none;"></textarea>
+      </div>
+
+      <div class="form-group">
         <label class="form-label">Tu nombre <span style="color: var(--text-muted); font-weight: 400;">(opcional)</span></label>
         <input type="text" class="text-input" id="nameInput" placeholder="Ej. Juan Pérez" autocomplete="name">
       </div>
@@ -826,6 +831,7 @@
       repairs: null,
       employees: null,
       cfdi: null,
+      comments: "",
       name: "",
       email: "",
     };
@@ -841,6 +847,7 @@
         state.repairs = s.repairs || null;
         state.employees = s.employees || null;
         state.cfdi = s.cfdi || null;
+        state.comments = s.comments || "";
         state.name = s.name || "";
         state.email = s.email || "";
       } catch (e) {}
@@ -854,6 +861,7 @@
         repairs: state.repairs,
         employees: state.employees,
         cfdi: state.cfdi,
+        comments: state.comments,
         name: state.name,
         email: state.email,
       }));
@@ -928,6 +936,7 @@
       renderRadioGroup("repairsGroup", REPAIRS, "repairs");
       renderRadioGroup("employeesGroup", EMPLOYEES, "employees");
       renderRadioGroup("cfdiGroup", CFDI, "cfdi");
+      document.getElementById("commentsInput").value = state.comments;
       document.getElementById("nameInput").value = state.name;
       document.getElementById("emailInput").value = state.email;
       updateNextBtn();
@@ -964,6 +973,11 @@
     }
 
     // ── Input listeners (step 3) ─────────────────────────────────────────
+
+    document.getElementById("commentsInput").addEventListener("input", e => {
+      state.comments = e.target.value;
+      saveState();
+    });
 
     document.getElementById("nameInput").addEventListener("input", e => {
       state.name = e.target.value;
@@ -1057,6 +1071,7 @@
         repairs: state.repairs,
         employees: state.employees,
         cfdi: state.cfdi,
+        comments: state.comments.trim(),
       };
 
       try {
